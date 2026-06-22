@@ -1,0 +1,18 @@
+{
+  "name": "@visor/testing",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@visor/compiler": "0.1.0",
+    "@visor/privacy": "0.1.0",
+    "@visor/protocol": "0.1.0",
+    "@visor/schemas": "0.1.0"
+  },
+  "devDependencies": {
+    "vitest": "^4.1.9"
+  }
+}
