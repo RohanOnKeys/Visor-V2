@@ -8,11 +8,13 @@
   },
   "dependencies": {
     "@visor/compiler": "0.1.0",
+    "@visor/extractor": "0.1.0",
     "@visor/privacy": "0.1.0",
     "@visor/protocol": "0.1.0",
     "@visor/schemas": "0.1.0"
   },
   "devDependencies": {
+    "jsdom": "^26.1.0",
     "vitest": "^4.1.9"
   }
 }

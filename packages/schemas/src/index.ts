@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+export * from './v1-context.js';
+
 export const BridgeProtocolVersionSchema = z.literal('visor_bridge.v1');
 
 export const ExtensionIdentitySchema = z.object({

@@ -19,6 +19,6 @@ describe('migrated V1 threat rules', () => {
         'Visor architecture',
         'A technical article about browser context.',
       ),
-    ).toEqual({ riskLevel: 'low', reasons: [] });
+    ).toEqual({ riskLevel: 'low', warnings: [] });
   });
 });

@@ -1,59 +1,94 @@
-// Migrated and normalized from Visor v1 src/privacy/threatRules.ts.
 export interface ThreatAnalysis {
   riskLevel: 'low' | 'medium' | 'high';
-  reasons: string[];
+  warnings: string[];
 }
 
-const HIGH_RISK_URL_PATTERNS = [
-  /\/login(?:\/|$)/i,
-  /\/signin(?:\/|$)/i,
-  /\/checkout(?:\/|$)/i,
-  /\/payment(?:\/|$)/i,
-  /\/billing(?:\/|$)/i,
-  /\/account\/security(?:\/|$)/i,
-];
+type RiskLevel = ThreatAnalysis['riskLevel'];
 
-const HIGH_RISK_TEXT_PATTERNS = [
-  /\bpassword\b/i,
-  /\bone[- ]?time (?:password|code)\b/i,
-  /\bverification code\b/i,
-  /\bcredit card\b/i,
-  /\bsecurity settings\b/i,
-];
-
-const MEDIUM_RISK_TEXT_PATTERNS = [
-  /\bemail address\b/i,
-  /\bphone number\b/i,
-  /\bshipping address\b/i,
-  /\baccount settings\b/i,
-];
+function maxRisk(left: RiskLevel, right: RiskLevel): RiskLevel {
+  const levels: Record<RiskLevel, number> = { low: 0, medium: 1, high: 2 };
+  return levels[left] >= levels[right] ? left : right;
+}
 
 export function analyzePageRisk(
   url: string,
   title: string,
   textSnippet: string,
 ): ThreatAnalysis {
-  const reasons: string[] = [];
-  const combinedText = `${title}\n${textSnippet}`;
+  const warnings: string[] = [];
+  let riskLevel: RiskLevel = 'low';
+  const normalizedUrl = url.toLowerCase();
+  const normalizedTitle = title.toLowerCase();
+  const normalizedText = textSnippet.toLowerCase();
 
-  if (HIGH_RISK_URL_PATTERNS.some((pattern) => pattern.test(url))) {
-    reasons.push('The page URL indicates an authentication, payment, or security flow.');
+  const isFinancial =
+    normalizedUrl.includes('bank') ||
+    normalizedUrl.includes('checkout') ||
+    normalizedUrl.includes('payment') ||
+    normalizedUrl.includes('paypal') ||
+    normalizedUrl.includes('stripe') ||
+    normalizedUrl.includes('billing') ||
+    /credit[- ]?card|transaction|invoice|bank account/i.test(normalizedText);
+  if (isFinancial) {
+    riskLevel = 'high';
+    warnings.push(
+      'Financial or payment portal indicators detected. Extracted context may contain billing or transactional logs.',
+    );
   }
 
-  if (HIGH_RISK_TEXT_PATTERNS.some((pattern) => pattern.test(combinedText))) {
-    reasons.push('The page contains high-risk authentication or financial language.');
+  const isMedical =
+    normalizedUrl.includes('medical') ||
+    normalizedUrl.includes('patient') ||
+    normalizedUrl.includes('health') ||
+    normalizedUrl.includes('clinic') ||
+    normalizedUrl.includes('epic') ||
+    /prescription|medical record|diagnosis|patient info/i.test(normalizedText);
+  if (isMedical) {
+    riskLevel = maxRisk(riskLevel, 'medium');
+    warnings.push(
+      'Medical or patient portal indicators detected. Extracted context may contain HIPAA-sensitive personal details.',
+    );
   }
 
-  if (reasons.length > 0) {
-    return { riskLevel: 'high', reasons };
+  const isGovernment =
+    normalizedUrl.includes('.gov') ||
+    normalizedUrl.includes('government') ||
+    normalizedUrl.includes('court') ||
+    normalizedUrl.includes('tax') ||
+    normalizedUrl.includes('passport');
+  if (isGovernment) {
+    riskLevel = maxRisk(riskLevel, 'medium');
+    warnings.push(
+      'Government or tax portal indicators detected. Extracted context may contain official registration details.',
+    );
   }
 
-  if (MEDIUM_RISK_TEXT_PATTERNS.some((pattern) => pattern.test(combinedText))) {
-    return {
-      riskLevel: 'medium',
-      reasons: ['The page may contain personal or account information.'],
-    };
+  const isAuthentication =
+    normalizedUrl.includes('login') ||
+    normalizedUrl.includes('signin') ||
+    normalizedUrl.includes('oauth') ||
+    normalizedUrl.includes('settings/account') ||
+    normalizedTitle.includes('sign in') ||
+    normalizedTitle.includes('log in');
+  if (isAuthentication) {
+    riskLevel = maxRisk(riskLevel, 'high');
+    warnings.push(
+      'Authentication or sign-in page detected. Be careful not to expose credentials or access tokens.',
+    );
   }
 
-  return { riskLevel: 'low', reasons: [] };
+  const isDashboard =
+    normalizedUrl.includes('dashboard') ||
+    normalizedUrl.includes('console') ||
+    normalizedUrl.includes('admin') ||
+    normalizedTitle.includes('dashboard') ||
+    /welcome back|my account|settings|analytics|metrics/i.test(normalizedText);
+  if (isDashboard && riskLevel === 'low') {
+    riskLevel = 'medium';
+    warnings.push(
+      'Private account dashboard detected. Extracted content may contain internal usage metrics.',
+    );
+  }
+
+  return { riskLevel, warnings };
 }

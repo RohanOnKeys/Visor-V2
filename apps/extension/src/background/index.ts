@@ -20,3 +20,7 @@ export function createReadyEvent(): BridgeEvent<'extension.ready'> {
     payload: extensionIdentity,
   };
 }
+
+chrome.runtime.onInstalled.addListener(() => {
+  void chrome.action.setBadgeText({ text: '' });
+});

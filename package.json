@@ -13,7 +13,7 @@
     "build:apps": "npm run build -w @visor/extension && npm run build -w @visor/mcp-server",
     "build:packages": "npm run build -w @visor/protocol && npm run build -w @visor/schemas && npm run build -w @visor/privacy && npm run build -w @visor/extractor && npm run build -w @visor/compiler",
     "clean": "npm run clean --workspaces --if-present",
-    "test": "npm run build:packages && npm run test --workspaces --if-present",
+    "test": "npm run build && npm run test --workspaces --if-present",
     "typecheck": "npm run build:packages && npm run typecheck --workspaces --if-present"
   },
   "engines": {

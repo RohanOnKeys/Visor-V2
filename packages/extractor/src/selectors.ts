@@ -1,24 +1,65 @@
-// Migrated from Visor v1 src/content/selectors.ts.
 export function getSelectorHint(element: Element): string {
-  if (element.id) {
-    return `#${CSS.escape(element.id)}`;
-  }
+  const stableSelf = getStableSelector(element);
+  if (stableSelf) return stableSelf;
 
-  const testId = element.getAttribute('data-testid');
-  if (testId) {
-    return `[data-testid="${CSS.escape(testId)}"]`;
+  const path: string[] = [];
+  let current: Element | null = element;
+  while (current) {
+    const stable = getStableSelector(current);
+    let selector = stable ?? current.tagName.toLowerCase();
+    const id = current.getAttribute('id');
+    if (!stable && id && /^[a-zA-Z0-9_-]+$/.test(id)) {
+      path.unshift(`#${id}`);
+      break;
+    }
+    const className = current.getAttribute('class');
+    if (!stable && className) {
+      const firstClass = className
+        .trim()
+        .split(/\s+/)
+        .find((value) => /^[a-zA-Z0-9_-]+$/.test(value));
+      if (firstClass) selector += `.${firstClass}`;
+    }
+    const parent: Element | null = current.parentElement;
+    if (parent && !stable) {
+      const siblings: Element[] = Array.from(parent.children);
+      const tagName = current.tagName;
+      if (
+        siblings.filter((sibling) => sibling.tagName === tagName).length > 1
+      ) {
+        selector += `:nth-child(${siblings.indexOf(current) + 1})`;
+      }
+    }
+    path.unshift(selector);
+    if (stable) break;
+    current = parent;
   }
+  return path.join(' > ');
+}
 
-  const name = element.getAttribute('name');
-  if (name) {
-    return `${element.tagName.toLowerCase()}[name="${CSS.escape(name)}"]`;
+function getStableSelector(element: Element): string | undefined {
+  const tag = element.tagName.toLowerCase();
+  for (const attribute of [
+    'data-testid',
+    'data-test',
+    'data-cy',
+    'data-qa',
+    'data-track-id',
+    'aria-label',
+  ]) {
+    const value = element.getAttribute(attribute);
+    if (value && value.length <= 80) {
+      return `${tag}[${attribute}="${escapeAttribute(value)}"]`;
+    }
   }
-
   const role = element.getAttribute('role');
-  const ariaLabel = element.getAttribute('aria-label');
-  if (role && ariaLabel) {
-    return `[role="${CSS.escape(role)}"][aria-label="${CSS.escape(ariaLabel)}"]`;
-  }
+  if (!role) return undefined;
+  const name = element.getAttribute('aria-label');
+  return name
+    ? `${tag}[role="${escapeAttribute(role)}"][aria-label="${escapeAttribute(name)}"]`
+    : `${tag}[role="${escapeAttribute(role)}"]`;
+}
 
-  return element.tagName.toLowerCase();
+function escapeAttribute(value: string): string {
+  return value.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
 }
