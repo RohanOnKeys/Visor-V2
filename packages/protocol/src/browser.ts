@@ -36,6 +36,7 @@ export interface BrowserTab {
   url: string;
   active: boolean;
   accessible: boolean;
+  status?: string;
 }
 
 export interface BrowserObserveRequest {

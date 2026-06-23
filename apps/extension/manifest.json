@@ -4,6 +4,7 @@
   "version": "0.1.0",
   "description": "A secure local browser context runtime for AI agents.",
   "permissions": ["activeTab", "scripting", "storage", "tabs"],
+  "host_permissions": ["http://127.0.0.1/*"],
   "background": {
     "service_worker": "service-worker.js",
     "type": "module"

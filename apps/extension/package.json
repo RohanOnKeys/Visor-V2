@@ -9,6 +9,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
+    "@visor/compiler": "0.1.0",
     "@visor/extractor": "0.1.0",
     "@visor/protocol": "0.1.0",
     "@visor/schemas": "0.1.0"

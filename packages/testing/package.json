@@ -7,14 +7,18 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "@visor/compiler": "0.1.0",
     "@visor/extractor": "0.1.0",
+    "@visor/mcp-server": "0.1.0",
     "@visor/privacy": "0.1.0",
     "@visor/protocol": "0.1.0",
     "@visor/schemas": "0.1.0"
   },
   "devDependencies": {
+    "@types/ws": "^8.18.0",
     "jsdom": "^26.1.0",
-    "vitest": "^4.1.9"
+    "vitest": "^4.1.9",
+    "ws": "^8.18.0"
   }
 }

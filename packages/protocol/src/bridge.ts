@@ -14,6 +14,12 @@ export interface ExtensionIdentity {
   protocolVersion: BridgeProtocolVersion;
 }
 
+export interface ExtensionHello {
+  token: string;
+  identity: ExtensionIdentity;
+  capabilities: VisorCapabilities;
+}
+
 export interface McpClientIdentity {
   name: string;
   version?: string;
@@ -76,3 +82,14 @@ export interface VisorCapabilities {
   confirmations: boolean;
   autonomousMode: boolean;
 }
+
+export const BRIDGE_METHODS = {
+  extensionHello: 'extension.hello',
+  extensionReady: 'extension.ready',
+  browserGetActiveTab: 'browser.get_active_tab',
+  browserObserve: 'browser.observe',
+  bridgePing: 'bridge.ping',
+} as const;
+
+export type BridgeMethod =
+  (typeof BRIDGE_METHODS)[keyof typeof BRIDGE_METHODS];

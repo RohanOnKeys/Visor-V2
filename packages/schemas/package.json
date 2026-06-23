@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@visor/protocol": "0.1.0",
-    "zod": "^3.23.8"
+    "zod": "^3.25.0"
   },
   "devDependencies": {
     "typescript": "^5.4.5"

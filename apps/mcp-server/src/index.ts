@@ -3,9 +3,16 @@ import {
   type BridgeStatus,
   type VisorCapabilities,
 } from '@visor/protocol';
+import { pathToFileURL } from 'node:url';
+import { startVisorServer } from './server.js';
 
-export const SERVER_NAME = 'visor-mcp';
-export const SERVER_VERSION = '0.1.0';
+export { ExtensionBridge, createExtensionHello } from './bridge.js';
+export {
+  createVisorMcpServer,
+  startVisorServer,
+  SERVER_NAME,
+  SERVER_VERSION,
+} from './server.js';
 
 export function getDisconnectedStatus(): BridgeStatus {
   return {
@@ -26,4 +33,29 @@ export function getInitialCapabilities(): VisorCapabilities {
     confirmations: false,
     autonomousMode: false,
   };
+}
+
+async function main(): Promise<void> {
+  const token = process.env.VISOR_BRIDGE_TOKEN;
+  if (!token) {
+    throw new Error(
+      'VISOR_BRIDGE_TOKEN is required and must match the extension pairing token.',
+    );
+  }
+  const port = process.env.VISOR_BRIDGE_PORT
+    ? Number.parseInt(process.env.VISOR_BRIDGE_PORT, 10)
+    : undefined;
+  await startVisorServer({
+    bridgeToken: token,
+    bridgePort: port,
+    allowedExtensionId: process.env.VISOR_EXTENSION_ID,
+  });
+}
+
+const entryPath = process.argv[1];
+if (entryPath && import.meta.url === pathToFileURL(entryPath).href) {
+  main().catch((error: unknown) => {
+    console.error(error instanceof Error ? error.message : String(error));
+    process.exitCode = 1;
+  });
 }

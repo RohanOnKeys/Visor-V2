@@ -23,7 +23,7 @@ describe('Phase 0 extension package', () => {
       'storage',
       'tabs',
     ]);
-    expect(manifest.host_permissions).toBeUndefined();
+    expect(manifest.host_permissions).toEqual(['http://127.0.0.1/*']);
     expect(manifest.oauth2).toBeUndefined();
   });
 

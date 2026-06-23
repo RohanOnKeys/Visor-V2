@@ -3,6 +3,7 @@ import {
   type BridgeEvent,
   type ExtensionIdentity,
 } from '@visor/protocol';
+import { ExtensionBridgeClient } from './bridge-client.js';
 
 export const extensionIdentity: ExtensionIdentity = {
   name: 'Visor',
@@ -23,4 +24,13 @@ export function createReadyEvent(): BridgeEvent<'extension.ready'> {
 
 chrome.runtime.onInstalled.addListener(() => {
   void chrome.action.setBadgeText({ text: '' });
+});
+
+const bridgeClient = new ExtensionBridgeClient();
+void bridgeClient.start();
+
+chrome.storage.onChanged.addListener((changes, areaName) => {
+  if (areaName !== 'local' || !changes.bridgeConnection) return;
+  bridgeClient.stop();
+  void bridgeClient.start();
 });
